@@ -1,4 +1,5 @@
 #include"Thread.h"
+#include<stdio.h>
 ThreadData::ThreadData(const ThreadFunc &func):
     m_func(func)
 {
@@ -27,9 +28,9 @@ Thread::Thread(const ThreadFunc& func):
 }
 Thread::~Thread()
 {
-    if(m_isRunning&&!m_joined){
-        pthread_detach(m_tid);
-    }
+    //if(m_isRunning&&!m_joined){
+       // pthread_detach(m_tid);
+    //}
 
    // delete m_data;
     //m_data=nullptr;
@@ -41,9 +42,13 @@ int Thread::run()
     assert(!m_isRunning);
     m_isRunning=true;
     m_data=new ThreadData(m_func);
-    if(pthread_create(&m_tid,NULL,startThread,static_cast<void*>(m_data))==0){
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
+    pthread_attr_setdetachstate(&attr,PTHREAD_CREATE_JOINABLE);
+    if(pthread_create(&m_tid,&attr,startThread,static_cast<void*>(m_data))==0){
         return 0;
     }else{
+        fprintf(stderr,"pthread_create\n");
         m_isRunning=false;
         delete m_data;
         return -1;

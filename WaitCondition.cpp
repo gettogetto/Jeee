@@ -13,7 +13,16 @@ WaitCondition::~WaitCondition()
 
 void WaitCondition::wait()
 {
-    CHECK(pthread_cond_wait(&m_cond_var,m_mutex_lock.get_mutex_ptr()));
+    CHECK(pthread_cond_wait(&m_cond_var,m_mutex_lock.getMutex()));
+}
+
+bool WaitCondition::waitTime(long seconds, long nanoseconds)
+{
+
+    timespec now;
+    clock_gettime(CLOCK_REALTIME,&now);//from 1970.1.1 0:0:0
+    const timespec timeout{now.tv_sec+static_cast<time_t>(seconds),now.tv_nsec+nanoseconds};
+    return ETIMEDOUT==pthread_cond_timedwait(&m_cond_var,m_mutex_lock.getMutex(),&timeout);
 }
 
 void WaitCondition::wakeOne()

@@ -10,7 +10,7 @@ public:
     void lock();
     void tryLock();
     void unlock();
-    pthread_mutex_t* get_mutex_ptr();
+    pthread_mutex_t* getMutex();
 
     //nocopy
     MutexLock(const MutexLock&)=delete;

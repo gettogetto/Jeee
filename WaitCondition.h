@@ -2,6 +2,8 @@
 
 #include<pthread.h>
 #include<assert.h>
+#include<time.h>
+#include<errno.h>
 #include"Mutex.h"
 
 #define CHECK(ret) ({__typeof__(ret) err=(ret);\
@@ -14,7 +16,7 @@ public:
     ~WaitCondition();
 
     void wait();
-
+    bool waitTime(long seconds,long nanoseconds);//time out return true,else return false
     void wakeOne();
     void wakeAll();
 //nocopy

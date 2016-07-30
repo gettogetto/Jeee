@@ -26,6 +26,10 @@ void MutexLock::lock()
     CHECK(pthread_mutex_lock(&m_lock));
     is_locked=true;
 }
+void MutexLock::tryLock()
+{
+    CHECK(pthread_mutex_trylock(&m_lock));
+}
 
 void MutexLock::unlock()
 {

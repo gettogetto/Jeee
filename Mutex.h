@@ -8,6 +8,7 @@ public:
     MutexLock();
     ~MutexLock();
     void lock();
+    void tryLock();
     void unlock();
     pthread_mutex_t* get_mutex_ptr();
 
@@ -25,7 +26,7 @@ private:
 //a RAII class MutexLockGuard
 class MutexLockGuard{
 public:
-    explicit MutexLockGuard(MutexLock&);
+    explicit MutexLockGuard(MutexLock&);//must not use like "MutexLockGuard(mutexlock);" .it is a tempory object.
     ~MutexLockGuard();
 
     MutexLockGuard(const MutexLockGuard&)=delete;

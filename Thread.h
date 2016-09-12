@@ -38,5 +38,5 @@ private:
     bool m_isRunning;
     bool m_joined;
     pthread_t m_tid;
-    ThreadData *m_data;
+    ThreadData* m_data;
 };

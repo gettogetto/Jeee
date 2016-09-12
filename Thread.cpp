@@ -46,6 +46,7 @@ int Thread::run()
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr,PTHREAD_CREATE_JOINABLE);
     if(pthread_create(&m_tid,&attr,startThread,static_cast<void*>(m_data))==0){
+        //printf("pthread_create ok\n");
         return 0;
     }else{
         fprintf(stderr,"pthread_create\n");

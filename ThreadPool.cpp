@@ -5,30 +5,30 @@ ThreadPool::ThreadPool():
     m_pool_size(DEFAULT_POOL_SIZE),
     m_task_cond_var(m_task_mutex)
 {
-
+    init();
 }
 
 ThreadPool::ThreadPool(int pool_size):
     m_pool_size(pool_size),
     m_task_cond_var(m_task_mutex)
 {
-
+    init();
 }
 ThreadPool::~ThreadPool()
 {
     if(m_pool_state!=STOPPED)
     {
-        destroy_threadpool();
+        destroy();
     }
 }
 
-int ThreadPool::initialize_threadpool()
+int ThreadPool::init()
 {
     //todo :lazy loading threads instead of creating threads at once
     m_pool_state=STARTED;
     m_ThreadVec.reserve(m_pool_size);
     for(int i=0;i<m_pool_size;i++){
-        Thread thread(std::bind(&ThreadPool::execute_thread,this));
+        Thread thread(std::bind(&ThreadPool::workerThread,this));
 
         m_ThreadVec[i]=thread;
         m_ThreadVec[i].run();
@@ -37,7 +37,7 @@ int ThreadPool::initialize_threadpool()
     return 0;
 }
 
-int ThreadPool::destroy_threadpool()
+int ThreadPool::destroy()
 {
     m_task_mutex.lock();
     m_pool_state=STOPPED;
@@ -52,13 +52,13 @@ int ThreadPool::destroy_threadpool()
 
         ret=m_ThreadVec[i].join();
         std::cout<<"in destroy_threadpool() pthread_join() returned "<<ret<<":"<<strerror(errno)<<std::endl;
-        m_task_cond_var.wakeAll();//trying waking up a bunch of threads that are still waiting
+    //    m_task_cond_var.wakeAll();//trying waking up a bunch of threads that are still waiting
 
     }
     std::cout<<m_pool_size<<" in destroy_threadpool() threads exited from the threadpool"<<std::endl;
     return 0;
 }
-int ThreadPool::add_task(Task *task)
+int ThreadPool::addTask(const Task& task)
 {
     m_task_mutex.lock();
     //todo :put a limit on how many task canbe added at most
@@ -71,10 +71,10 @@ int ThreadPool::add_task(Task *task)
 
 }
 
-void ThreadPool::execute_thread(){
-    Task* task=NULL;
+void ThreadPool::workerThread(){
+
     std::cout<<"in execute_thread() starting thread "<<pthread_self()<<std::endl;
-    while(true){
+    while(m_pool_state==STARTED){
         //to pick a task
         std::cout<<"in execute_thread() locking: "<<pthread_self()<<std::endl;
         m_task_mutex.lock();
@@ -97,13 +97,12 @@ void ThreadPool::execute_thread(){
             pthread_exit(NULL);
         }
 
-        task=m_tasks.front();
+        Task task=m_tasks.front();
         m_tasks.pop_front();
         std::cout<<"in execute_thread() unlocking: "<<pthread_self()<<std::endl;
         m_task_mutex.unlock();
 
-        task->run();
-        delete task;
+        task.run();
     }
     return ;
 }
